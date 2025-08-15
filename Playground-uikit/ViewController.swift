@@ -17,6 +17,13 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
         return label
     }()
     
+    let roktEmbedView: MPRoktEmbeddedView = {
+        let view = MPRoktEmbeddedView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.isAccessibilityElement = true
+        return view
+    }()
+        
     // Button to call Rokt
     let roktButton: UIButton = {
         let button = UIButton(type: .system)
@@ -42,6 +49,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
         // Add UI elements
         view.addSubview(statusLabel)
         view.addSubview(roktButton)
+        view.addSubview(roktEmbedView)
 
         // Set up constraints
         NSLayoutConstraint.activate([
@@ -53,7 +61,12 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
             
             // Constraints for the Rokt button
             roktButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            roktButton.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+            roktButton.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            
+            roktEmbedView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            roktEmbedView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: 16),
+            roktEmbedView.topAnchor.constraint(equalTo: roktButton.bottomAnchor, constant: 16)
+            
         ])
         
         // Add target action for the button
@@ -67,49 +80,47 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
     }
     
     func setupRoktEvents() {
-        MParticle.sharedInstance().rokt.events("RoktLayout", onEvent: { [weak self] roktEvent in
-            DispatchQueue.main.async {
+        MParticle.sharedInstance().rokt.events("RoktLayout", onEvent: { roktEvent in
                 if let event = roktEvent as? MPRoktEvent.MPRoktInitComplete {
                     print("Rokt init completed with status: \(event.success)")
-                    self?.updateRoktStatus("Rokt Status: Initialized ✅", color: .systemGreen)
+                    self.updateRoktStatus("Rokt Status: Initialized ✅", color: .systemGreen)
                 } else if let _ = roktEvent as? MPRoktEvent.MPRoktShowLoadingIndicator {
                     print("Rokt show loading")
-                    self?.updateRoktStatus("Rokt Status: Loading...", color: .systemOrange)
+                    self.updateRoktStatus("Rokt Status: Loading...", color: .systemOrange)
                 } else if let _ = roktEvent as? MPRoktEvent.MPRoktHideLoadingIndicator {
                     print("Rokt hide loading")
-                    self?.updateRoktStatus("Rokt Status: Ready", color: .systemBlue)
+                    self.updateRoktStatus("Rokt Status: Ready", color: .systemBlue)
                 } else if let _ = roktEvent as? MPRoktEvent.MPRoktPlacementInteractive {
                     print("Rokt interactive placement")
-                    self?.updateRoktStatus("Rokt Status: Interactive", color: .systemPurple)
+                    self.updateRoktStatus("Rokt Status: Interactive", color: .systemPurple)
                 } else if let _ = roktEvent as? MPRoktEvent.MPRoktPlacementReady {
                     print("Rokt placement ready")
-                    self?.updateRoktStatus("Rokt Status: Placement Ready", color: .systemGreen)
+                    self.updateRoktStatus("Rokt Status: Placement Ready", color: .systemGreen)
                 } else if let _ = roktEvent as? MPRoktEvent.MPRoktOfferEngagement {
                     print("Rokt offer engagement")
-                    self?.updateRoktStatus("Rokt Status: Offer Engaged", color: .systemTeal)
+                    self.updateRoktStatus("Rokt Status: Offer Engaged", color: .systemTeal)
                 } else if let _ = roktEvent as? MPRoktEvent.MPRoktOpenUrl {
                     print("Rokt open url")
-                    self?.updateRoktStatus("Rokt Status: URL Opened", color: .systemIndigo)
+                    self.updateRoktStatus("Rokt Status: URL Opened", color: .systemIndigo)
                 } else if let _ = roktEvent as? MPRoktEvent.MPRoktPositiveEngagement {
                     print("Rokt MPRoktPositiveEngagement")
-                    self?.updateRoktStatus("Rokt Status: Positive Engagement ⭐", color: .systemYellow)
+                    self.updateRoktStatus("Rokt Status: Positive Engagement ⭐", color: .systemYellow)
                 } else if let _ = roktEvent as? MPRoktEvent.MPRoktPlacementClosed {
                     print("Rokt MPRoktPlacementClosed")
-                    self?.updateRoktStatus("Rokt Status: Placement Closed", color: .systemGray)
+                    self.updateRoktStatus("Rokt Status: Placement Closed", color: .systemGray)
                 } else if let _ = roktEvent as? MPRoktEvent.MPRoktPlacementCompleted {
                     print("Rokt MPRoktPlacementCompleted")
-                    self?.updateRoktStatus("Rokt Status: Completed ✅", color: .systemGreen)
+                    self.updateRoktStatus("Rokt Status: Completed ✅", color: .systemGreen)
                 } else if let _ = roktEvent as? MPRoktEvent.MPRoktPlacementFailure {
                     print("Rokt MPRoktPlacementFailure")
-                    self?.updateRoktStatus("Rokt Status: Failed ❌", color: .systemRed)
+                    self.updateRoktStatus("Rokt Status: Failed ❌", color: .systemRed)
                 } else if let _ = roktEvent as? MPRoktEvent.MPRoktFirstPositiveEngagement {
                     print("Rokt MPRoktFirstPositiveEngagement")
-                    self?.updateRoktStatus("Rokt Status: First Engagement 🎉", color: .systemMint)
+                    self.updateRoktStatus("Rokt Status: First Engagement 🎉", color: .systemMint)
                 } else if let _ = roktEvent as? MPRoktEvent.MPRoktCartItemInstantPurchase {
                     print("Rokt MPRoktCartItemInstantPurchase")
-                    self?.updateRoktStatus("Rokt Status: Instant Purchase 🛒", color: .systemCyan)
+                    self.updateRoktStatus("Rokt Status: Instant Purchase 🛒", color: .systemCyan)
                 }
-            }
         })
     }
     
@@ -200,17 +211,47 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
         // Update UI to show Rokt is being called
         updateRoktStatus("Rokt Status: Calling Rokt...", color: .systemOrange)
         
+        // Create Rokt view with dynamic height (only set width, height will be determined by content)
         let attributes = [
-            "email": "test@gmail.com",
+            "email": "prudhvi@gmail.com",
             "firstname": "Jenny",
             "lastname": "Smith",
             "billingzipcode": "07762",
-            "confirmationref": "54321"
+            "confirmationref": "54321",
+            "country": "uk"
         ]
         
+        let callbacks = MPRoktEventCallback()
+        callbacks.onLoad = {
+            // Optional callback for when the Rokt placement loads
+            print("Rokt onLoad")
+        }
+        callbacks.onUnLoad = {
+            // Optional callback for when the Rokt placement unloads
+            print("Rokt onUnLoad")
+        }
+        callbacks.onShouldShowLoadingIndicator = {
+            // Optional callback to show a loading indicator
+            print("Rokt onShouldShowLoadingIndicator")
+        }
+        callbacks.onShouldHideLoadingIndicator = {
+            // Optional callback to hide a loading indicator
+            print("Rokt onShouldHideLoadingIndicator")
+        }
+        callbacks.onEmbeddedSizeChange = { (placement: String, size: CGFloat) in
+            // Optional callback to get selectedPlacement and height required by the placement every time the height of the placement changes
+            print("Rokt onEmbeddedSizeChange - Placement: \(placement), Height: \(size)")
+            // Here you can update the view's height dynamically based on the content
+            DispatchQueue.main.async {
+                var newFrame = self.roktEmbedView.frame
+                newFrame.size.height = size
+                self.roktEmbedView.frame = newFrame
+            }
+        }
+        let embeddedViews = ["RoktEmbedded1": roktEmbedView]
         let roktConfig = MPRoktConfig()
-        roktConfig.colorMode = .light
-        MParticle.sharedInstance().rokt.selectPlacements("RoktExperience", attributes: attributes, embeddedViews: nil, config: roktConfig, callbacks: nil)
+        roktConfig.colorMode = .system
+        MParticle.sharedInstance().rokt.selectPlacements("helperstage", attributes: attributes, embeddedViews: embeddedViews, config: roktConfig, callbacks: callbacks)
     }
 
 }

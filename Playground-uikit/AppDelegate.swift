@@ -14,7 +14,38 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        let options = MParticleOptions(key: "",
+        
+        MParticle.sharedInstance().rokt.events("RoktLayout", onEvent: { roktEvent in
+            if let event = roktEvent as? MPRoktEvent.MPRoktInitComplete {
+                print("Rokt init completed with status: \(event.success)")
+            } else if let event = roktEvent as? MPRoktEvent.MPRoktShowLoadingIndicator {
+
+            } else if let event = roktEvent as? MPRoktEvent.MPRoktHideLoadingIndicator {
+                
+            } else if let event = roktEvent as? MPRoktEvent.MPRoktPlacementInteractive {
+                
+            } else if let event = roktEvent as? MPRoktEvent.MPRoktPlacementReady {
+                
+            } else if let event = roktEvent as? MPRoktEvent.MPRoktOfferEngagement {
+                
+            } else if let event = roktEvent as? MPRoktEvent.MPRoktOpenUrl {
+                
+            } else if let event = roktEvent as? MPRoktEvent.MPRoktPositiveEngagement {
+                
+            } else if let event = roktEvent as? MPRoktEvent.MPRoktPlacementClosed {
+                
+            } else if let event = roktEvent as? MPRoktEvent.MPRoktPlacementCompleted {
+                
+            } else if let event = roktEvent as? MPRoktEvent.MPRoktPlacementFailure {
+                
+            } else if let event = roktEvent as? MPRoktEvent.MPRoktFirstPositiveEngagement {
+                
+            } else if let event = roktEvent as? MPRoktEvent.MPRoktCartItemInstantPurchase {
+                
+            }
+        })
+        
+        let options = MParticleOptions(key: "key",
         secret: "") // TODO intentionally left empty. Please fill it.
         options.environment = .development
         options.logLevel = .debug
